@@ -22,14 +22,13 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Enum для управления состоянием сообщений
-enum MessageType { noQuotes, newQuoteAdded }
-
 // Модель цитаты
 class Quote {
   final String text;
   final String author;
-  Quote(this.text, this.author);
+  final String imagePath;
+
+  Quote(this.text, this.author, this.imagePath);
 }
 
 // Главный экран
@@ -42,39 +41,117 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController quoteTextController = TextEditingController();
+  final TextEditingController quoteAuthorController = TextEditingController();
+
   final List<Quote> _quotes = [];
-  MessageType _messageType = MessageType.noQuotes;
+  final String defaultImagePath =
+      'https://cdn-icons-png.flaticon.com/128/17818/17818874.png';
 
-  // Метод добавления цитаты
-  Future<void> _addQuote() async {
-    final result = await showDialog<Map<String, String>?>(
-      context: context,
-      builder: (BuildContext context) => const AddQuoteDialog(),
-    );
+  @override
+  void initState() {
+    super.initState();
 
-    if (result != null && result['quote'] != '' && result['author'] != '') {
-      setState(() {
-        _quotes.add(
-          Quote(result['quote']!.addQuotesIfMissing(), result['author']!.capitalize()),
-        );
-        _messageType = MessageType.newQuoteAdded;
-      });
-    }
+    // Тестовые цитаты
+    _quotes.add(Quote(
+      'Сила воли — это ключ к успеху.',
+      'Аноним',
+      'https://cdn-icons-png.flaticon.com/128/17818/17818880.png',
+    ));
+    _quotes.add(Quote(
+      'Вера в себя — это первый шаг к победе.',
+      'Аноним',
+      'https://cdn-icons-png.flaticon.com/128/17818/17818889.png',
+    ));
+    _quotes.add(Quote(
+      'Не бойся быть отличным, бойся быть обычным.',
+      'Аноним',
+      'https://cdn-icons-png.flaticon.com/128/17818/17818899.png',
+    ));
+  }
+
+  void _addQuote() {
+    setState(() {
+      final newQuote = Quote(
+        quoteTextController.text.addQuotesIfMissing().capitalize(),
+        quoteAuthorController.text.capitalize(),
+        defaultImagePath, // Устанавливаем дефолтное изображение
+      );
+      _quotes.add(newQuote);
+      quoteTextController.clear();
+      quoteAuthorController.clear();
+    });
+  }
+
+  void _removeQuote(int index) {
+    setState(() {
+      _quotes.removeAt(index);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text('Цитаты'),
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
       ),
       body: Stack(
         children: [
-          Center(
-            child: _messageType == MessageType.noQuotes
-                ? const NoQuotesMessage()
-                : QuoteList(quotes: _quotes),
+          Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Список цитат',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+                ),
+              ),
+              Expanded(
+                child: _quotes.isEmpty
+                    ? const Center(
+                  child: Text(
+                    'Нет добавленных цитат. Добавьте первую!',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: _quotes.length,
+                  itemBuilder: (context, index) {
+                    final quote = _quotes[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 10.0,
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(8.0),
+                        leading: SizedBox(
+                          width: 50.0,
+                          child: Image.network(
+                            quote.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.error, color: Colors.red),
+                          ),
+                        ),
+                        title: Text(
+                          quote.text,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                        subtitle: Text('- ${quote.author}'),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _removeQuote(index),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
           Align(
             alignment: Alignment.bottomCenter,
@@ -83,46 +160,46 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addQuote,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Новая цитата'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: quoteTextController,
+                      decoration: const InputDecoration(
+                        hintText: 'Введите текст цитаты',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: quoteAuthorController,
+                      decoration: const InputDecoration(
+                        hintText: 'Введите автора цитаты',
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      _addQuote();
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Добавить'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
         tooltip: 'Добавить цитату',
         child: const Icon(Icons.format_quote),
       ),
-    );
-  }
-}
-
-// Виджет списка цитат
-class QuoteList extends StatelessWidget {
-  final List<Quote> quotes;
-  const QuoteList({super.key, required this.quotes});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: quotes.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(
-            quotes[index].text,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-          subtitle: Text('- ${quotes[index].author}'),
-        );
-      },
-    );
-  }
-}
-
-// Виджет сообщения "нет цитат"
-class NoQuotesMessage extends StatelessWidget {
-  const NoQuotesMessage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text(
-      'Нет добавленных цитат. Добавь первую!',
-      textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 18, color: Colors.grey),
     );
   }
 }
@@ -135,7 +212,7 @@ class QuoteCounter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(30.0),
+      padding: const EdgeInsets.all(16.0),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         decoration: BoxDecoration(
@@ -148,46 +225,10 @@ class QuoteCounter extends StatelessWidget {
         ),
         child: Text(
           'Количество цитат: $count',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+          style: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
         ),
       ),
-    );
-  }
-}
-
-// Диалоговое окно добавления цитаты
-class AddQuoteDialog extends StatelessWidget {
-  const AddQuoteDialog({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final TextEditingController quoteController = TextEditingController();
-    final TextEditingController authorController = TextEditingController();
-
-    return AlertDialog(
-      title: const Text('Добавить цитату'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: quoteController,
-            decoration: const InputDecoration(labelText: 'Цитата'),
-          ),
-          TextField(
-            controller: authorController,
-            decoration: const InputDecoration(labelText: 'Автор'),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop({
-            'quote': quoteController.text,
-            'author': authorController.text,
-          }),
-          child: const Text('Добавить'),
-        ),
-      ],
     );
   }
 }
