@@ -1,5 +1,3 @@
-// ignore_for_file: unnecessary_string_escapes
-
 import 'package:flutter/material.dart';
 
 void main() {
@@ -22,16 +20,18 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Модель цитаты
 class Quote {
   final String text;
   final String author;
   final String imagePath;
+  bool isFavorite;
 
-  Quote(this.text, this.author, this.imagePath);
+  Quote(this.text, this.author, this.imagePath, [this.isFavorite = false]);
+  void toggleFavorite() {
+    isFavorite = !isFavorite;
+  }
 }
 
-// Главный экран
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -51,8 +51,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-
-    // Тестовые цитаты
     _quotes.add(Quote(
       'Сила воли — это ключ к успеху.',
       'Аноним',
@@ -75,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final newQuote = Quote(
         quoteTextController.text.addQuotesIfMissing().capitalize(),
         quoteAuthorController.text.capitalize(),
-        defaultImagePath, // Устанавливаем дефолтное изображение
+        defaultImagePath,
       );
       _quotes.add(newQuote);
       quoteTextController.clear();
@@ -97,65 +95,95 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
       ),
-      body: Stack(
+      body: Column(
         children: [
-          Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Список цитат',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
-                ),
-              ),
-              Expanded(
-                child: _quotes.isEmpty
-                    ? const Center(
-                  child: Text(
-                    'Нет добавленных цитат. Добавьте первую!',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                )
-                    : ListView.builder(
-                  itemCount: _quotes.length,
-                  itemBuilder: (context, index) {
-                    final quote = _quotes[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 10.0,
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(8.0),
-                        leading: SizedBox(
-                          width: 50.0,
-                          child: Image.network(
-                            quote.imagePath,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.error, color: Colors.red),
-                          ),
-                        ),
-                        title: Text(
-                          quote.text,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        subtitle: Text('- ${quote.author}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _removeQuote(index),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Список цитат',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+            ),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: QuoteCounter(count: _quotes.length),
+          Expanded(
+            child: _quotes.isEmpty
+                ? const Center(
+              child: Text(
+                'Нет добавленных цитат. Добавьте первую!',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            )
+                : ListView.builder(
+              itemCount: _quotes.length,
+              itemBuilder: (context, index) {
+                final quote = _quotes[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 10.0,
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(8.0),
+                    leading: SizedBox(
+                      width: 50.0,
+                      child: Image.network(
+                        quote.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.error, color: Colors.red),
+                      ),
+                    ),
+                    title: Text(
+                      quote.text,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: Text('- ${quote.author}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            quote.isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: quote.isFavorite ? Colors.red : null,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              quote.toggleFavorite();
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(quote.isFavorite
+                                    ? 'Цитата добавлена в избранное'
+                                    : 'Цитата удалена из избранного'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            _removeQuote(index);
+                          },
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              QuoteDetailScreen(quote: quote),
+                        ),
+                      );
+                    },
+                  ),
+
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -200,40 +228,53 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Добавить цитату',
         child: const Icon(Icons.format_quote),
       ),
+      //floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
 
-// Виджет счетчика цитат
-class QuoteCounter extends StatelessWidget {
-  final int count;
-  const QuoteCounter({super.key, required this.count});
+class QuoteDetailScreen extends StatelessWidget {
+  final Quote quote;
+  const QuoteDetailScreen({super.key, required this.quote});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: Colors.black.withOpacity(0.2),
-            width: 1,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Детали цитаты'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.network(
+                quote.imagePath,
+                height: 150,
+                errorBuilder: (_, __, ___) =>
+                const Icon(Icons.error, color: Colors.red),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                quote.text,
+                style:
+                const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '- ${quote.author}',
+                style: const TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
           ),
-        ),
-        child: Text(
-          'Количество цитат: $count',
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
         ),
       ),
     );
   }
 }
 
-// Расширение для форматирования текста
 extension StringExtension on String {
   String capitalize() {
     return split(' ').map((word) {
