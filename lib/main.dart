@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/data/repositories/quotes_repository.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,6 +28,7 @@ class Quote {
   bool isFavorite;
 
   Quote(this.text, this.author, this.imagePath, [this.isFavorite = false]);
+
   void toggleFavorite() {
     isFavorite = !isFavorite;
   }
@@ -34,6 +36,7 @@ class Quote {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
   final String title;
 
   @override
@@ -41,49 +44,49 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController quoteTextController = TextEditingController();
-  final TextEditingController quoteAuthorController = TextEditingController();
-
+  final TextEditingController searchController = TextEditingController();
   final List<Quote> _quotes = [];
-  final String defaultImagePath =
-      'https://cdn-icons-png.flaticon.com/128/17818/17818874.png';
+  final List<Quote> _filteredQuotes = [];
+
+  final QuotesRepository _quotesRepository = QuotesRepository();
 
   @override
   void initState() {
     super.initState();
-    _quotes.add(Quote(
-      'Сила воли — это ключ к успеху.',
-      'Аноним',
-      'https://cdn-icons-png.flaticon.com/128/17818/17818880.png',
-    ));
-    _quotes.add(Quote(
-      'Вера в себя — это первый шаг к победе.',
-      'Аноним',
-      'https://cdn-icons-png.flaticon.com/128/17818/17818889.png',
-    ));
-    _quotes.add(Quote(
-      'Не бойся быть отличным, бойся быть обычным.',
-      'Аноним',
-      'https://cdn-icons-png.flaticon.com/128/17818/17818899.png',
-    ));
-  }
+    _loadQuotes();
 
-  void _addQuote() {
-    setState(() {
-      final newQuote = Quote(
-        quoteTextController.text.addQuotesIfMissing().capitalize(),
-        quoteAuthorController.text.capitalize(),
-        defaultImagePath,
-      );
-      _quotes.add(newQuote);
-      quoteTextController.clear();
-      quoteAuthorController.clear();
+    searchController.addListener(() {
+      _filterQuotes(searchController.text);
     });
   }
 
-  void _removeQuote(int index) {
+  Future<void> _loadQuotes() async {
+    final quotes = await _quotesRepository.loadData(onError: (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка загрузки: $error')),
+      );
+    });
+    if (quotes != null) {
+      setState(() {
+        _quotes.addAll(quotes);
+        _filteredQuotes.addAll(quotes);
+      });
+    }
+  }
+
+  void _filterQuotes(String query) {
     setState(() {
-      _quotes.removeAt(index);
+      if (query.isEmpty) {
+        _filteredQuotes.clear();
+        _filteredQuotes.addAll(_quotes);
+      } else {
+        _filteredQuotes.clear();
+        _filteredQuotes.addAll(
+          _quotes.where((quote) =>
+          quote.text.toLowerCase().contains(query.toLowerCase()) ||
+              quote.author.toLowerCase().contains(query.toLowerCase())),
+        );
+      }
     });
   }
 
@@ -97,25 +100,28 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Список цитат',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: searchController,
+              decoration: const InputDecoration(
+                labelText: 'Поиск',
+                prefixIcon: Icon(Icons.search),
+              ),
             ),
           ),
           Expanded(
-            child: _quotes.isEmpty
+            child: _filteredQuotes.isEmpty
                 ? const Center(
               child: Text(
-                'Нет добавленных цитат. Добавьте первую!',
+                'Нет цитат для отображения.',
                 style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
             )
                 : ListView.builder(
-              itemCount: _quotes.length,
+              itemCount: _filteredQuotes.length,
               itemBuilder: (context, index) {
-                final quote = _quotes[index];
+                final quote = _filteredQuotes[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     vertical: 8.0,
@@ -138,37 +144,26 @@ class _MyHomePageState extends State<MyHomePage> {
                           fontSize: 18, fontWeight: FontWeight.w500),
                     ),
                     subtitle: Text('- ${quote.author}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            quote.isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            color: quote.isFavorite ? Colors.red : null,
+                    trailing: IconButton(
+                      icon: Icon(
+                        quote.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: quote.isFavorite ? Colors.red : null,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          quote.toggleFavorite();
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(quote.isFavorite
+                                ? 'Цитата добавлена в избранное'
+                                : 'Цитата удалена из избранного'),
+                            duration: const Duration(seconds: 2),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              quote.toggleFavorite();
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(quote.isFavorite
-                                    ? 'Цитата добавлена в избранное'
-                                    : 'Цитата удалена из избранного'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            _removeQuote(index);
-                          },
-                        ),
-                      ],
+                        );
+                      },
                     ),
                     onTap: () {
                       Navigator.push(
@@ -180,61 +175,19 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                     },
                   ),
-
                 );
               },
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Новая цитата'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: quoteTextController,
-                      decoration: const InputDecoration(
-                        hintText: 'Введите текст цитаты',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: quoteAuthorController,
-                      decoration: const InputDecoration(
-                        hintText: 'Введите автора цитаты',
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      _addQuote();
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Добавить'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        tooltip: 'Добавить цитату',
-        child: const Icon(Icons.format_quote),
-      ),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
 
 class QuoteDetailScreen extends StatelessWidget {
   final Quote quote;
+
   const QuoteDetailScreen({super.key, required this.quote});
 
   @override
@@ -274,6 +227,10 @@ class QuoteDetailScreen extends StatelessWidget {
     );
   }
 }
+
+
+
+
 
 extension StringExtension on String {
   String capitalize() {
