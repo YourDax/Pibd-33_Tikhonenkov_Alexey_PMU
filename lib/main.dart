@@ -44,11 +44,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController searchController = TextEditingController();
   final List<Quote> _quotes = [];
   final List<Quote> _filteredQuotes = [];
 
   final QuotesRepository _quotesRepository = QuotesRepository();
+
+  final TextEditingController searchController = TextEditingController();
+  final TextEditingController authorController = TextEditingController();
 
   @override
   void initState() {
@@ -56,36 +58,56 @@ class _MyHomePageState extends State<MyHomePage> {
     _loadQuotes();
 
     searchController.addListener(() {
-      _filterQuotes(searchController.text);
+      _loadQuotes();
+    });
+
+    authorController.addListener(() {
+      _loadQuotes();
     });
   }
 
+  // Метод для загрузки цитат с учетом обоих фильтров
   Future<void> _loadQuotes() async {
-    final quotes = await _quotesRepository.loadData(onError: (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка загрузки: $error')),
-      );
-    });
+    final query = searchController.text;
+    final author = authorController.text;
+
+    final quotes = await _quotesRepository.loadData(
+      q: query, // Поиск по цитате
+      author: author, // Поиск по автору
+      onError: (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка загрузки: $error')),
+        );
+      },
+    );
+
     if (quotes != null) {
       setState(() {
+        _quotes.clear();
         _quotes.addAll(quotes);
-        _filteredQuotes.addAll(quotes);
+        _filterQuotes();
       });
     }
+    print('Загружено цитат: ${_quotes.length}');
+    print('Отфильтрованные цитаты: ${_filteredQuotes.length}');
   }
 
-  void _filterQuotes(String query) {
+  // Фильтрация цитат по введенным значениям
+  void _filterQuotes() {
     setState(() {
-      if (query.isEmpty) {
-        _filteredQuotes.clear();
-        _filteredQuotes.addAll(_quotes);
-      } else {
-        _filteredQuotes.clear();
-        _filteredQuotes.addAll(
-          _quotes.where((quote) =>
-          quote.text.toLowerCase().contains(query.toLowerCase()) ||
-              quote.author.toLowerCase().contains(query.toLowerCase())),
-        );
+      _filteredQuotes.clear(); // Очистите список фильтрации
+      _filteredQuotes.addAll(_quotes); // Изначально показываем все цитаты
+
+      // Применяем фильтрацию по цитате
+      if (searchController.text.isNotEmpty) {
+        _filteredQuotes.retainWhere((quote) =>
+            quote.text.toLowerCase().contains(searchController.text.toLowerCase()));
+      }
+
+      // Применяем фильтрацию по автору
+      if (authorController.text.isNotEmpty) {
+        _filteredQuotes.retainWhere((quote) =>
+            quote.author.toLowerCase().contains(authorController.text.toLowerCase()));
       }
     });
   }
@@ -95,8 +117,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Цитаты'),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
       ),
       body: Column(
         children: [
@@ -105,8 +125,18 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextField(
               controller: searchController,
               decoration: const InputDecoration(
-                labelText: 'Поиск',
+                labelText: 'Поиск по цитате',
                 prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: authorController,
+              decoration: const InputDecoration(
+                labelText: 'Поиск по автору',
+                prefixIcon: Icon(Icons.person),
               ),
             ),
           ),
@@ -121,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 : ListView.builder(
               itemCount: _filteredQuotes.length,
               itemBuilder: (context, index) {
-                final quote = _filteredQuotes[index];
+                final quote = _filteredQuotes[index]; // Используем _filteredQuotes для отображения
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     vertical: 8.0,

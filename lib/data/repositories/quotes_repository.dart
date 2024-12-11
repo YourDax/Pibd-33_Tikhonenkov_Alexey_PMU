@@ -13,19 +13,32 @@ class QuotesRepository extends ApiInterface {
       requestBody: true,
     ))
     ..options.headers = {
-      'Authorization': 'Bearer 82ccaa45c8344de4ac008b2487d33361', // Add the API key here
+      'Authorization': 'Bearer 82ccaa45c8344de4ac008b2487d33361',
     };
 
   static const String _baseUrl = 'https://favqs.com/api';
 
   @override
-  Future<List<Quote>?> loadData({String? q, OnErrorCallback? onError}) async {
+  Future<List<Quote>?> loadData({String? q, String? author, OnErrorCallback? onError}) async {
     try {
+      final Map<String, dynamic> queryParams = {};
+
+      // Добавляем фильтрацию по тексту цитаты
+      if (q != null && q.isNotEmpty) {
+        queryParams['filter'] = q; // Фильтруем по слову
+      }
+
+      // Добавляем фильтрацию по автору
+      if (author != null && author.isNotEmpty) {
+        queryParams['type'] = 'author';
+        queryParams['filter'] = author;
+      }
+
       const String url = '$_baseUrl/quotes';
 
       final Response<dynamic> response = await _dio.get<Map<dynamic, dynamic>>(
         url,
-        queryParameters: q != null ? {'filter[text_cont]': q} : null,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
       final QuotesDto dto = QuotesDto.fromJson(response.data as Map<String, dynamic>);
@@ -37,3 +50,4 @@ class QuotesRepository extends ApiInterface {
     }
   }
 }
+

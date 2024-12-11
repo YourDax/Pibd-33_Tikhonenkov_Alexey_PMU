@@ -13,7 +13,7 @@ QuotesDto _$QuotesDtoFromJson(Map<String, dynamic> json) => QuotesDto(
     );
 
 QuoteDataDto _$QuoteDataDtoFromJson(Map<String, dynamic> json) => QuoteDataDto(
-      text: json['text'] as String?,
+      body: json['body'] as String?,
       author: json['author'] as String?,
       imageUrl: json['imageUrl'] as String?,
     );

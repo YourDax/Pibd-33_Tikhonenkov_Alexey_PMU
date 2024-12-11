@@ -13,11 +13,11 @@ class QuotesDto {
 
 @JsonSerializable(createToJson: false)
 class QuoteDataDto {
-  final String? text;
+  final String? body;
   final String? author;
   final String? imageUrl;
 
-  const QuoteDataDto({this.text, this.author, this.imageUrl});
+  const QuoteDataDto({this.body, this.author, this.imageUrl});
 
   factory QuoteDataDto.fromJson(Map<String, dynamic> json) => _$QuoteDataDtoFromJson(json);
 }

@@ -6,7 +6,7 @@ const _imagePlaceholder =
 
 extension QuoteDtoToModel on QuoteDataDto {
   Quote toDomain() => Quote(
-    text ?? 'Без текста',
+    body ?? 'Без текста',
     author ?? 'Неизвестный автор',
     imageUrl ?? _imagePlaceholder,
   );
