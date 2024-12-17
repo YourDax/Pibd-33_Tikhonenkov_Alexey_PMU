@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import '../../domain/quote.dart';
 import '/data/dtos/quotes_dto.dart';
 import '/data/mappers/quotes_mapper.dart';
 import '/data/repositories/api_interface.dart';
-import '/main.dart';
-import '/data/presentation/dialogs/show_dialog.dart';
+import '/presentation/home_page/home_page.dart';
+import '/presentation/dialogs/show_dialog.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class QuotesRepository extends ApiInterface {
@@ -23,12 +24,12 @@ class QuotesRepository extends ApiInterface {
     try {
       final Map<String, dynamic> queryParams = {};
 
-      // Добавляем фильтрацию по тексту цитаты
+
       if (q != null && q.isNotEmpty) {
-        queryParams['filter'] = q; // Фильтруем по слову
+        queryParams['filter'] = q;
       }
 
-      // Добавляем фильтрацию по автору
+
       if (author != null && author.isNotEmpty) {
         queryParams['type'] = 'author';
         queryParams['filter'] = author;
