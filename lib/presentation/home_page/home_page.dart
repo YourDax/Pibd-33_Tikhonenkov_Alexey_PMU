@@ -27,17 +27,15 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          HomeBloc(QuotesRepository())..add(const HomeLoadDataEvent()),
+      create: (context) => HomeBloc(QuotesRepository())..add(const HomeLoadDataEvent()),
       child: Scaffold(
         appBar: AppBar(
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title),
+              Text(context.locale.title),
               GestureDetector(
-                onTap: () =>
-                    context.read<LocaleBloc>().add(const ChangeLocaleEvent()),
+                onTap: () => context.read<LocaleBloc>().add(const ChangeLocaleEvent()),
                 child: SizedBox.square(
                   dimension: 50,
                   child: Padding(
@@ -125,7 +123,7 @@ class _HomePageBodyState extends State<_HomePageBody> {
               child: TextField(
                 controller: searchController,
                 decoration: InputDecoration(
-                  labelText: context.locale.search,
+                  labelText: context.locale.search_word,
                   prefixIcon: const Icon(Icons.search),
                 ),
               ),
@@ -135,7 +133,7 @@ class _HomePageBodyState extends State<_HomePageBody> {
               child: TextField(
                 controller: authorController,
                 decoration: InputDecoration(
-                  labelText: context.locale.search,
+                  labelText: context.locale.search_author,
                   prefixIcon: const Icon(Icons.person),
                 ),
               ),
@@ -148,22 +146,17 @@ class _HomePageBodyState extends State<_HomePageBody> {
                       : FutureBuilder<List<Quote>?>(
                           future: state.data,
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
                             }
                             if (snapshot.hasError) {
-                              return Center(
-                                  child: Text('Ошибка: ${snapshot.error}'));
+                              return Center(child: Text('${context.locale.error}: ${snapshot.error}'));
                             }
-                            if (snapshot.data == null ||
-                                snapshot.data!.isEmpty) {
-                              return const Center(
+                            if (snapshot.data == null || snapshot.data!.isEmpty) {
+                              return Center(
                                 child: Text(
-                                  'Нет цитат для отображения.',
-                                  style: TextStyle(
-                                      fontSize: 18, color: Colors.grey),
+                                  context.locale.error,
+                                  style: const TextStyle(fontSize: 18, color: Colors.grey),
                                 ),
                               );
                             }
@@ -188,9 +181,8 @@ class _HomePageBodyState extends State<_HomePageBody> {
                                     quote: quote,
                                     isLiked: isLiked,
                                     onFavoriteToggle: () {
-                                      context
-                                          .read<LikeBloc>()
-                                          .add(ChangeLikeEvent(quote.id));
+                                      context.read<LikeBloc>().add(ChangeLikeEvent(quote.id));
+                                      _showSnackbar(context, !isLiked);
                                     },
                                   );
                                 },

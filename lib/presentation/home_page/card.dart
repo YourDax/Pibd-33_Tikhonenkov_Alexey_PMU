@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pmu_flutter_labs/components/extensions/context_x.dart';
 import '../../domain/quote.dart';
 import 'home_page.dart';
 
@@ -28,8 +29,7 @@ class QuoteCard extends StatelessWidget {
           child: Image.network(
             quote.imagePath,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-            const Icon(Icons.error, color: Colors.red),
+            errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
           ),
         ),
         title: Text(
@@ -57,7 +57,6 @@ class QuoteCard extends StatelessWidget {
   }
 }
 
-
 class QuoteDetailScreen extends StatelessWidget {
   final Quote quote;
 
@@ -67,7 +66,7 @@ class QuoteDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Детали цитаты'),
+        title: Text(context.locale.details),
       ),
       body: Center(
         child: Padding(
@@ -78,8 +77,7 @@ class QuoteDetailScreen extends StatelessWidget {
               Image.network(
                 quote.imagePath,
                 height: 150,
-                errorBuilder: (_, __, ___) =>
-                const Icon(Icons.error, color: Colors.red),
+                errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
               ),
               const SizedBox(height: 20),
               Text(

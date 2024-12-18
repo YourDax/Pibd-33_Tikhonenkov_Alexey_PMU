@@ -10,6 +10,7 @@ import 'components/locale/l10n/app_locale.dart';
 import 'data/repositories/quotes_repository.dart';
 import '/presentation/home_page/bloc/bloc.dart';
 import '/presentation/home_page/home_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -21,35 +22,32 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<LocaleBloc>(
       lazy: false,
-      create:(context) => LocaleBloc(Locale(Platform.localeName)),
-      child: BlocBuilder<LocaleBloc, LocaleState>(
-        builder: (context, state) {
-          return MaterialApp(
-            title: 'Цитаты',
-            locale: state.currentLocale,
-            localizationsDelegates: AppLocale.localizationsDelegates,
-            supportedLocales: AppLocale.supportedLocales,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-              useMaterial3: true,
-            ),
-            home: RepositoryProvider<QuotesRepository>(
-              lazy: true,
-              create: (_) => QuotesRepository(),
-              child: BlocProvider<LikeBloc>(
+      create: (context) => LocaleBloc(Locale(Platform.localeName)),
+      child: BlocBuilder<LocaleBloc, LocaleState>(builder: (context, state) {
+        return MaterialApp(
+          title: 'Цитаты',
+          locale: state.currentLocale,
+          localizationsDelegates: AppLocale.localizationsDelegates,
+          supportedLocales: AppLocale.supportedLocales,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+            useMaterial3: true,
+          ),
+          home: RepositoryProvider<QuotesRepository>(
+            lazy: true,
+            create: (_) => QuotesRepository(),
+            child: BlocProvider<LikeBloc>(
+              lazy: false,
+              create: (context) => LikeBloc(), // Add LikeBloc here
+              child: BlocProvider<HomeBloc>(
                 lazy: false,
-                create: (context) => LikeBloc(), // Add LikeBloc here
-                child: BlocProvider<HomeBloc>(
-                  lazy: false,
-                  create: (context) => HomeBloc(context.read<QuotesRepository>()),
-                  child: const MyHomePage(title: "Цитаты"),
-                ),
+                create: (context) => HomeBloc(context.read<QuotesRepository>()),
+                child: const MyHomePage(title: '',),
               ),
             ),
-          );
-        }
-    ),
+          ),
+        );
+      }),
     );
   }
 }
-

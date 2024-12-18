@@ -95,23 +95,47 @@ abstract class AppLocale {
     Locale('ru')
   ];
 
-  /// No description provided for @search.
+  /// No description provided for @title.
   ///
   /// In ru, this message translates to:
-  /// **'Поиск'**
-  String get search;
+  /// **'Цитаты'**
+  String get title;
+
+  /// No description provided for @search_word.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по слову'**
+  String get search_word;
+
+  /// No description provided for @search_author.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по автору'**
+  String get search_author;
 
   /// No description provided for @liked.
   ///
   /// In ru, this message translates to:
-  /// **'Круто :)'**
+  /// **'Лайк :)'**
   String get liked;
 
   /// No description provided for @disliked.
   ///
   /// In ru, this message translates to:
-  /// **'Не круто :с'**
+  /// **'Дизлайк :('**
   String get disliked;
+
+  /// No description provided for @error.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка :C'**
+  String get error;
+
+  /// No description provided for @details.
+  ///
+  /// In ru, this message translates to:
+  /// **'Детали цитаты'**
+  String get details;
 
   /// No description provided for @arbEnding.
   ///

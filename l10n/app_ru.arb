@@ -1,9 +1,13 @@
 {
   "@@locale": "ru",
 
-  "search": "Поиск",
-  "liked": "Круто :)",
-  "disliked": "Не круто :с",
+    "title": "Цитаты",
+    "search_word": "Поиск по слову",
+    "search_author": "Поиск по автору",
+    "liked": "Лайк :)",
+    "disliked": "Дизлайк :(",
+    "error": "Ошибка :C",
+    "details": "Детали цитаты",
 
   "arbEnding": ""
 }
