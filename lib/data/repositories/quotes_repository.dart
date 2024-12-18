@@ -24,11 +24,9 @@ class QuotesRepository extends ApiInterface {
     try {
       final Map<String, dynamic> queryParams = {};
 
-
       if (q != null && q.isNotEmpty) {
         queryParams['filter'] = q;
       }
-
 
       if (author != null && author.isNotEmpty) {
         queryParams['type'] = 'author';
@@ -51,4 +49,3 @@ class QuotesRepository extends ApiInterface {
     }
   }
 }
-

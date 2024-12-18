@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pmu_flutter_labs/components/extensions/context_x.dart';
 import '../../components/utils/debounce.dart';
 import '../../domain/quote.dart';
+import '../common/svg_objects.dart';
+import '../like_bloc/like_bloc.dart';
+import '../like_bloc/like_event.dart';
 import '/data/repositories/quotes_repository.dart';
 import '/presentation/home_page/bloc/bloc.dart';
 import '/presentation/home_page/bloc/events.dart';
@@ -40,11 +44,15 @@ class _HomePageBodyState extends State<_HomePageBody> {
 
   @override
   void initState() {
+    SvgObjects.init();
     super.initState();
 
     searchController.addListener(() {
       Debounce.run(() {
-        context.read<HomeBloc>().add(HomeLoadDataEvent(search: searchController.text));
+        context.read<HomeBloc>().add(HomeLoadDataEvent(
+          search: searchController.text,
+          author: authorController.text,
+        ));
       });
     });
 
@@ -56,6 +64,18 @@ class _HomePageBodyState extends State<_HomePageBody> {
         ));
       });
     });
+    context.read<LikeBloc>().add(const LoadLikesEvent());
+
+  }
+
+  void _showSnackbar(BuildContext context, bool isLiked) {
+    final message = isLiked ? context.locale.liked : context.locale.disliked;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -119,9 +139,7 @@ class _HomePageBodyState extends State<_HomePageBody> {
                         return QuoteCard(
                           quote: quote,
                           onFavoriteToggle: () {
-                            setState(() {
-                              quote.toggleFavorite();
-                            });
+                            context.read<LikeBloc>().add(ChangeLikeEvent(quote.id));
                           },
                         );
                       },
@@ -136,3 +154,4 @@ class _HomePageBodyState extends State<_HomePageBody> {
     );
   }
 }
+

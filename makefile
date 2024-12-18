@@ -1,0 +1,14 @@
+gen:
+	flutter pub run build_runner build --delete-conflicting-outputs
+icon:
+	flutter pub run flutter_launcher_icons:main
+init_res:
+	dart pub global activate flutter_asset_generator
+format:
+	dart format . --line-length 100
+res:
+	fgen --output lib/components/resources.g.dart --no-watch --no-preview;\
+	dart format . --line-length 100
+loc:
+	flutter gen-l10n
+	dart format . --line-length 100

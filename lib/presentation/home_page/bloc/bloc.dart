@@ -24,12 +24,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } else {
       // Если автор указан, фильтруем данные по тексту цитаты
       try {
-        final currentData = await repo.loadData(q:search, author: author,
+        final currentData = await repo.loadData(
+          q: search,
+          author: author,
         );
         final filteredData = currentData?.where((quote) {
           final matchesAuthor = quote.author.toLowerCase().contains(author.toLowerCase());
-          final matchesSearch = search.isEmpty ||
-              quote.text.toLowerCase().contains(search.toLowerCase());
+          final matchesSearch =
+              search.isEmpty || quote.text.toLowerCase().contains(search.toLowerCase());
           return matchesAuthor && matchesSearch;
         }).toList();
         emit(state.copyWith(data: Future.value(filteredData)));
@@ -39,13 +41,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-
-
-
-
-
   Future<void> _onRefreshData(HomeRefreshEvent event, Emitter<HomeState> emit) async {
-    add(HomeLoadDataEvent(search: event.search, author: event.author)); // Просто перезапускаем загрузку
+    add(HomeLoadDataEvent(
+        search: event.search, author: event.author)); // Просто перезапускаем загрузку
   }
-
 }

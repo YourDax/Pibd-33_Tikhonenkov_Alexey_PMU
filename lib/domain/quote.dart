@@ -2,11 +2,13 @@ class Quote {
   final String text;
   final String author;
   final String imagePath;
+  final String id;
   bool isFavorite;
 
-  Quote(this.text, this.author, this.imagePath, [this.isFavorite = false]);
+  Quote(this.text, this.author, this.imagePath, this.id,[this.isFavorite = false]);
 
-  void toggleFavorite() {
+  bool toggleFavorite() {
     isFavorite = !isFavorite;
+    return isFavorite;
   }
 }
