@@ -8,6 +8,5 @@ class LoadLikesEvent extends LikeEvent {
 
 class ChangeLikeEvent extends LikeEvent {
   final String id;
-
   const ChangeLikeEvent(this.id);
 }

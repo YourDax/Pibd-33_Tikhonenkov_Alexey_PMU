@@ -16,9 +16,10 @@ class QuoteDataDto {
   final String? body;
   final String? author;
   final String? imageUrl;
-  final String? id;
+  final dynamic id;
+  final bool? isLiked;
 
-  const QuoteDataDto({this.body, this.author, this.imageUrl, this.id});
+  const QuoteDataDto({this.body, this.author, this.imageUrl, this.id, this.isLiked});
 
   factory QuoteDataDto.fromJson(Map<String, dynamic> json) => _$QuoteDataDtoFromJson(json);
 }

@@ -1,64 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/quote.dart';
-import '../like_bloc/like_bloc.dart';
-import '../like_bloc/like_state.dart';
 import 'home_page.dart';
 
 class QuoteCard extends StatelessWidget {
   final Quote quote;
   final VoidCallback onFavoriteToggle;
+  final bool isLiked;
 
-  const QuoteCard({Key? key, required this.quote, required this.onFavoriteToggle}) : super(key: key);
+  const QuoteCard({
+    super.key,
+    required this.quote,
+    required this.onFavoriteToggle,
+    required this.isLiked,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              quote.text,
-              style: const TextStyle(fontSize: 18.0),
-            ),
-            const SizedBox(height: 8.0),
-            Text(
-              '- ${quote.author}',
-              style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 16.0),
-            ),
-            const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: onFavoriteToggle,
-                  icon: BlocBuilder<LikeBloc, LikeState>(
-                    builder: (context, state) {
-                      final isLiked = state.likedIds?.contains(quote.id) ?? false;
-                      return Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey,
-                      );
-                    },
-                  ),
-                  label: BlocBuilder<LikeBloc, LikeState>(
-                    builder: (context, state) {
-                      final isLiked = state.likedIds?.contains(quote.id) ?? false;
-                      return Text(isLiked ? 'Убрать из избранного' : 'Добавить в избранное');
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
+      margin: const EdgeInsets.symmetric(
+        vertical: 8.0,
+        horizontal: 10.0,
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(8.0),
+        leading: SizedBox(
+          width: 50.0,
+          child: Image.network(
+            quote.imagePath,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+            const Icon(Icons.error, color: Colors.red),
+          ),
         ),
+        title: Text(
+          quote.text,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        subtitle: Text('- ${quote.author}'),
+        trailing: IconButton(
+          icon: Icon(
+            isLiked ? Icons.favorite : Icons.favorite_border,
+            color: isLiked ? Colors.red : null,
+          ),
+          onPressed: onFavoriteToggle,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuoteDetailScreen(quote: quote),
+            ),
+          );
+        },
       ),
     );
   }
 }
+
 
 class QuoteDetailScreen extends StatelessWidget {
   final Quote quote;
@@ -80,7 +78,8 @@ class QuoteDetailScreen extends StatelessWidget {
               Image.network(
                 quote.imagePath,
                 height: 150,
-                errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.red),
+                errorBuilder: (_, __, ___) =>
+                const Icon(Icons.error, color: Colors.red),
               ),
               const SizedBox(height: 20),
               Text(

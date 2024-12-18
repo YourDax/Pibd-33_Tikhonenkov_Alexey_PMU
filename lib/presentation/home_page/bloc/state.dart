@@ -3,7 +3,7 @@ import '../../../domain/quote.dart';
 import '../home_page.dart';
 
 class HomeState extends Equatable {
-  final Future<List<Quote>>? data; // Изменено
+  final Future<List<Quote>>? data;
 
   const HomeState({this.data});
 

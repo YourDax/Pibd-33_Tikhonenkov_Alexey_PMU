@@ -16,4 +16,6 @@ QuoteDataDto _$QuoteDataDtoFromJson(Map<String, dynamic> json) => QuoteDataDto(
       body: json['body'] as String?,
       author: json['author'] as String?,
       imageUrl: json['imageUrl'] as String?,
+      id: json['id'],
+      isLiked: json['isLiked'] as bool?,
     );

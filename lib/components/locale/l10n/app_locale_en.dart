@@ -7,7 +7,7 @@ class AppLocaleEn extends AppLocale {
   AppLocaleEn([String locale = 'en']) : super(locale);
 
   @override
-  String get search => 'Search';
+  String get search => 'Поиск';
 
   @override
   String get liked => 'Like :)';

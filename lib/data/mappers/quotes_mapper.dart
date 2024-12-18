@@ -9,6 +9,7 @@ extension QuoteDtoToModel on QuoteDataDto {
         body ?? 'Без текста',
         author ?? 'Неизвестный автор',
         imageUrl ?? _imagePlaceholder,
-        id ?? "",
+        id?.toString() ?? "",
+        isLiked ?? false,
       );
 }

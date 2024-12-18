@@ -1,9 +1,13 @@
 {
   "@@locale": "en",
 
-  "search": "Search",
+  "title": "Quotes"
+  "search_word": "Search by word",
+  "search_author": "Search by author",
   "liked": "Like :)",
   "disliked": "Dislike :(",
+  "error": "Error :C"
+  "details": "Details of quote"
 
   "arbEnding": ""
 }
